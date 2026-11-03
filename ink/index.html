@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>墨流 · 水墨工坊</title><meta name="description" content="指尖水墨晕染，青碧烟雨与落花。定格画面，导出透明 PNG。"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="studio.css"></head>
+<body><a href="../" style="position:fixed;right:18px;bottom:18px;z-index:9999;padding:8px 14px;border:1px solid #c7d3d1;border-radius:20px;background:#ffffffdf;color:#324b49;font:13px sans-serif;text-decoration:none">← 工具集</a>
+<div class="title"><h1>墨流し</h1><div class="sub">SUMINAGASHI — INK DISSOLUTION</div></div>
+<div id="hint" class="hint">轻 触 落 墨 · 拖 动 晕 染</div>
+<section class="settings" aria-label="画面设置"><div class="modes" aria-label="水墨风格"><button data-mode="ink" aria-pressed="true">水墨</button><button data-mode="rain" aria-pressed="false">雨天</button><button data-mode="flowers" aria-pressed="false">落花</button><button data-mode="both" aria-pressed="false">雨落花</button></div>
+<button id="birdsBtn" class="birds-toggle" aria-pressed="false">飞鸟 · 关闭</button><details><summary>画面与导出</summary><div class="options">
+<label>墨色浓度 <input id="density" type="range" min="20" max="200" value="100"><output id="densityValue">100%</output></label>
+<label>雨花密度 <input id="amount" type="range" min="10" max="150" value="60"><output id="amountValue">60%</output></label>
+<label>飞鸟密度 <input id="birdAmount" type="range" min="10" max="150" value="50"><output id="birdAmountValue">50%</output></label>
+<label>风向 <input id="wind" type="range" min="-100" max="100" value="18"><output id="windValue">18</output></label>
+<label class="check"><input type="checkbox" id="transparent">透明背景预览</label>
+<label>导出尺寸<select id="exportSize"><option value="1">当前画布</option><option value="1920">长边 1920 px</option><option value="3840">长边 3840 px</option></select></label>
+<p>PNG 始终透明，包含花瓣与飞鸟，不包含纸纹、标题和按钮。高分辨率导出沿用当前墨迹细节。</p></div></details>
+<div class="export-row"><button id="pauseBtn" aria-pressed="false">暂停</button><button id="exportBtn">导出透明 PNG ↗</button></div></section>
+<div class="dock" role="toolbar" aria-label="水墨控制"><div class="inks" id="inks">
+<button class="ink ink-cycle" data-ink="cycle" aria-label="循环色" aria-pressed="true"><span class="lbl">巡</span></button>
+<button class="ink ink-sumi" data-ink="sumi" aria-label="墨黑" aria-pressed="false"><span class="lbl">墨</span></button>
+<button class="ink ink-ai" data-ink="ai" aria-label="靛蓝" aria-pressed="false"><span class="lbl">蓝</span></button>
+<button class="ink ink-shu" data-ink="shu" aria-label="朱红" aria-pressed="false"><span class="lbl">朱</span></button>
+<button class="ink ink-matsuba" data-ink="matsuba" aria-label="松绿" aria-pressed="false"><span class="lbl">松</span></button>
+<button class="ink jade" data-ink="jade" aria-label="青碧" aria-pressed="false"><span class="lbl">碧</span></button>
+<button class="ink pink" data-ink="pink" aria-label="樱粉" aria-pressed="false"><span class="lbl">樱</span></button></div><div class="sep"></div>
+<button class="act" id="autoBtn" aria-pressed="true"><span class="dot"></span>自动演出</button><button class="act" id="washBtn">清空</button></div>
+<div id="status" role="status" aria-live="polite"></div><div id="failure" hidden>当前设备无法启动水墨渲染，请使用支持 WebGL 的浏览器并开启硬件加速。</div>
+<script src="three.min.js"></script><script src="engine.js"></script></body></html>

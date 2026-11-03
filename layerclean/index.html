@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101416">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>LayerClean · 图层清理工作台</title>
+  <link rel="stylesheet" href="./app.css">
+  <script src="./import-startup.js" defer></script><script src="./bridge.js" defer></script>
+</head>
+<body>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+      <symbol id="i-package" viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5ZM3 7l9 5 9-5M12 12v10M7.5 4.5l9 5v4"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Z"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.7 7M3 4v7h7M12 7v5l3 2"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6"/><rect x="8" y="8" width="8" height="8" rx="1"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.5"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h7m5 0h4M4 17h3m5 0h8"/><circle cx="13.5" cy="7" r="2.5"/><circle cx="9.5" cy="17" r="2.5"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="LayerClean 首页">
+        <span class="brand-mark"><svg class="icon"><use href="#i-layers"/></svg></span>
+        <span>Layer<span class="brand-accent">Clean</span><small>图层清理工作台</small></span>
+      </a>
+      <span class="header-divider"></span>
+      <span class="workspace-label">设计师工作空间</span>
+      <div class="topbar-actions">
+        <label class="history-control" for="history-select"><svg class="icon"><use href="#i-history"/></svg><select id="history-select" disabled aria-label="选择历史任务"><option value="">选择上次任务</option></select></label>
+        <button id="help-button" class="icon-button" type="button" title="使用说明" aria-label="使用说明"><svg class="icon"><use href="#i-info"/></svg></button>
+        <span class="header-divider"></span>
+        <button id="connection-button" class="connection pending" type="button" title="检查本地服务连接"><span class="status-dot"></span><span id="connection-text">连接本地服务</span></button>
+      </div>
+    </header><a href="./cutout/" style="display:block;flex-shrink:0;text-align:center;padding:10px 16px;background:#203f35;color:#b9f4d9;border-bottom:1px solid #476c60">✂ 快速抠图：分离人物与背景，导出两张透明 PNG →</a>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden><svg class="icon"><use href="#i-info"/></svg><span id="notice-text"></span><button id="notice-close" class="icon-button" type="button" aria-label="关闭提示"><svg class="icon"><use href="#i-close"/></svg></button></div>
+
+    <main class="workbench">
+      <aside class="sidebar sidebar-left" aria-label="文件导入与任务列表">
+        <div class="panel-heading"><h1>素材文件</h1><span class="micro-label">INPUT</span></div>
+        <input id="file-input" type="file" accept=".png,.jpg,.jpeg,.webp,.zip,image/png,image/jpeg,image/webp,application/zip" multiple hidden>
+        <button id="dropzone" class="dropzone" type="button" disabled aria-describedby="upload-limits">
+          <span class="upload-icon"><svg class="icon"><use href="#i-upload"/></svg></span>
+          <strong>拖入文件，即可开始</strong>
+          <span>或<span class="inline-link">点击选择文件</span></span>
+          <span class="file-types"><b>PNG</b><b>ZIP</b><span>支持多选与批量导入</span></span>
+        </button>
+        <p id="upload-limits" class="upload-limits">正在读取本地服务限制…</p>
+        <div class="list-heading"><h2>任务列表 <span id="file-count" class="count-badge">0</span></h2><button id="clear-button" class="text-button" type="button" disabled title="只清空界面，不删除本机磁盘文件">清空</button></div>
+        <div id="list-context" class="list-context" hidden></div>
+        <div id="file-list" class="file-list" role="list" aria-label="已导入图层"></div>
+        <div id="list-empty" class="list-empty"><span class="empty-list-lines"><i></i><i></i><i></i></span><p>还没有导入文件</p><span>你的图层将在这里有序排列</span></div>
+        <div class="sidebar-bottom"><svg class="icon"><use href="#i-shield"/></svg><div><strong>文件不离开这台电脑</strong><span>由本机服务处理，不上传云端</span></div></div>
+      </aside>
+
+      <section class="workspace" aria-label="图层预览工作区">
+        <div class="workspace-heading"><div><div class="eyebrow"><span></span>透明图层 · 精准清理</div><h2>让创作回归干净。</h2><p>专为内置绿色重复水印设计，保留每一层的原始尺寸。</p></div><span class="workspace-stamp">LOCAL<br><b>FIRST.</b></span></div>
+        <div class="canvas-panel">
+          <div class="canvas-toolbar">
+            <div class="canvas-heading"><svg class="icon"><use href="#i-image"/></svg><span id="preview-title">图层预览</span><span id="dimension-badge" class="dimension-badge" hidden></span></div>
+            <div class="segmented view-modes" role="group" aria-label="预览模式"><button type="button" data-view="before" disabled>原图</button><button type="button" class="active" data-view="compare" aria-pressed="true" disabled>前后对比</button><button type="button" data-view="after" disabled>结果</button></div>
+          </div>
+          <div id="viewport" class="viewport bg-checker" tabindex="0" aria-label="图层画布，原尺寸模式下可滚动或拖拽平移">
+            <div id="empty-state" class="empty-state">
+              <div class="empty-art" aria-hidden="true"><div class="art-layer art-layer-back"></div><div class="art-layer art-layer-middle"></div><div class="art-layer art-layer-front"><svg class="icon"><use href="#i-layers"/></svg><span class="art-corner corner-tl"></span><span class="art-corner corner-br"></span></div><span class="art-label">ALPHA / ORIGINAL</span></div>
+              <h3>干净的图层，从这里开始</h3>
+              <p>选择、粘贴或拖入图片 / ZIP，让重复水印退场。<br>透明通道与处理结果，清清楚楚地对照。</p>
+              <button id="empty-import" class="primary-button compact" type="button" disabled><svg class="icon"><use href="#i-plus"/></svg>导入素材<svg class="icon"><use href="#i-arrow"/></svg></button>
+              <div class="empty-features"><span><i></i>原尺寸输出</span><span><i></i>Alpha 校验</span><span><i></i>本机处理</span></div>
+            </div>
+            <div id="image-space" class="image-space" hidden>
+              <div id="image-stage" class="image-stage mode-compare" style="--split:50%">
+                <img id="before-image" class="preview-image before-image" alt="所选图层原图" draggable="false">
+                <img id="after-image" class="preview-image after-image" alt="所选图层处理结果" draggable="false">
+                <span class="image-label before-label">原图</span><span class="image-label after-label">清理后</span>
+                <div id="compare-divider" class="compare-divider" role="slider" tabindex="0" aria-label="前后对比分割位置" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-orientation="horizontal"><span class="divider-knob"><span>‹</span><span>›</span></span></div>
+              </div>
+            </div>
+            <div id="preview-message" class="preview-message" role="status" hidden></div>
+            <div id="drop-overlay" class="drop-overlay" hidden><svg class="icon"><use href="#i-upload"/></svg><strong>松开，导入你的图层</strong><span>PNG / ZIP · 仅在本机处理</span></div>
+          </div>
+          <div class="canvas-bottom-toolbar">
+            <div class="background-controls" role="group" aria-label="画布背景"><span class="toolbar-caption">背景</span><button type="button" class="background-swatch swatch-checker active" data-background="checker" aria-label="棋盘透明背景" aria-pressed="true" title="棋盘透明背景"></button><button type="button" class="background-swatch swatch-light" data-background="light" aria-label="浅色背景" aria-pressed="false" title="浅色背景"></button><button type="button" class="background-swatch swatch-dark" data-background="dark" aria-label="深色背景" aria-pressed="false" title="深色背景"></button></div>
+            <span id="canvas-hint" class="canvas-hint">支持透明 PNG 与 ZIP 图层包</span>
+            <div class="zoom-controls"><button id="fit-button" type="button" class="toolbar-button active" aria-pressed="true" disabled><svg class="icon"><use href="#i-fit"/></svg>适应</button><button id="actual-button" class="toolbar-button" type="button" aria-pressed="false" disabled>100%</button><span id="zoom-value">—</span></div>
+          </div>
+        </div>
+        <div id="activity-panel" class="activity-panel" aria-live="polite"><div class="activity-icon"><svg class="icon"><use href="#i-layers"/></svg></div><div class="activity-content"><div class="activity-title"><strong id="activity-title">准备好，让图层焕然一新</strong><span id="activity-count">等待导入</span></div><p id="activity-message">上传素材后，一键运行内置水印识别与清理。</p><div id="progress-track" class="progress-track" role="progressbar" aria-label="任务处理进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div id="progress-fill"></div></div></div><button id="resume-button" class="text-button" type="button" hidden>重新查询</button></div>
+        <div class="workspace-note"><svg class="icon"><use href="#i-info"/></svg><span>针对内置两种绿色水印进行匹配；其他水印或复杂叠加区域不保证完全消除。</span></div>
+      </section>
+
+      <aside class="sidebar sidebar-right" aria-label="清理设置与校验摘要">
+        <div class="panel-heading"><h2><svg class="icon"><use href="#i-sliders"/></svg>清理设置</h2><span class="micro-label">PROCESS</span></div>
+        <section class="setting-section"><div class="field-heading"><h3>水印匹配</h3><span class="subtle-badge">内置规则</span></div><div id="profile-list" class="profile-list"><span class="muted">等待加载匹配规则</span></div><p class="field-help">仅匹配这两类水印，不进行整图重绘。角色透明层建议与对应背景放进同一 ZIP，便于辅助定位。</p></section>
+        <fieldset id="settings-fieldset" class="settings-fieldset" disabled>
+          <div class="setting-section"><div class="field-heading"><h3 id="strength-heading" class="field-label">清理强度</h3><span id="strength-value" class="mono mint">1.0×</span></div><div class="strength-options"><label><input type="radio" name="strength" value="0.8"><span>轻柔<small>0.8×</small></span></label><label><input type="radio" name="strength" value="1" checked><span>标准<small>1.0×</small></span></label><label><input type="radio" name="strength" value="1.1"><span>强力<small>1.1×</small></span></label><label><input type="radio" name="strength" value="1.6"><span>超强<small>1.6×</small></span></label></div><p id="strength-help" class="field-help">标准模式，在清理效果与图层保真之间取得平衡。</p></div>
+          <div class="setting-section adaptive-section"><label class="toggle-row" for="adaptive-input"><span><strong>高频去残影</strong><small>自适应处理水印边缘残留</small></span><span class="switch"><input id="adaptive-input" type="checkbox" checked><span class="switch-track"></span></span></label></div>
+        </fieldset>
+        <div class="preservation-note"><svg class="icon"><use href="#i-shield"/></svg><span>原尺寸处理<span class="note-dot">·</span>透明通道逐项校验</span></div>
+        <div class="run-area"><button id="process-button" class="primary-button" type="button" disabled><svg class="icon"><use href="#i-layers"/></svg><span id="process-label">开始清理</span><svg class="icon run-arrow"><use href="#i-arrow"/></svg></button><p id="run-hint">导入素材后即可开始</p></div>
+        <section class="validation-section"><div class="section-title"><h3>校验摘要</h3><span id="validation-state" class="subtle-badge">等待处理</span></div><p id="validation-scope" class="field-help">当前所选图层 · 以处理引擎实测为准</p><div class="metric-grid"><div><span>检测水印</span><strong id="marks-value">—<small>处</small></strong></div><div><span>Alpha 通道</span><strong id="alpha-value" class="alpha-value">待校验</strong></div></div><dl class="validation-details"><div><dt>标志 / 文字</dt><dd id="stats-value">— / —</dd></div><div><dt>图层尺寸</dt><dd id="size-value">—</dd></div><div><dt>尺寸校验</dt><dd id="dimensions-check">待校验</dd></div><div><dt>文件大小</dt><dd id="bytes-value">—</dd></div></dl><ul id="item-warnings" class="item-warnings" hidden></ul></section>
+        <div class="export-area"><a id="download-png" class="secondary-button disabled" aria-disabled="true" tabindex="-1"><svg class="icon"><use href="#i-download"/></svg>下载当前 PNG</a><a id="download-zip" class="secondary-button disabled" aria-disabled="true" tabindex="-1"><svg class="icon"><use href="#i-package"/></svg>下载整包 ZIP<span id="zip-count"></span></a><p>输出由浏览器引擎生成，保留原始分辨率</p></div>
+      </aside>
+    </main>
+    <footer class="statusbar"><span><span class="status-dot"></span>仅在本机运行<span class="footer-divider">/</span>图片不上传 · 浏览器内处理</span><span id="footer-service">等待连接本地引擎</span><span>LayerClean <b id="version-label">LOCAL</b></span><a href="../" style="color:#77d7b9">返回工具集</a></footer>
+  </div>
+  <dialog id="help-dialog"><div class="dialog-heading"><span class="brand-mark"><svg class="icon"><use href="#i-layers"/></svg></span><h2>把图层清理，留在本地</h2><button id="help-close" class="icon-button" type="button" aria-label="关闭使用说明"><svg class="icon"><use href="#i-close"/></svg></button></div><ol><li><strong>导入 PNG / ZIP</strong><p>多选或拖入素材，由浏览器引擎解析，限制以当前服务配置为准。</p></li><li><strong>选择强度，开始清理</strong><p>默认标准强度与高频去残影。强力模式可能带来色差；请先比较再下载。</p></li><li><strong>对比并验证</strong><p>拖动分割线，或使用方向键调整。100% 模式下可拖动画面或使用滚动条。水印数量和 Alpha 结果均来自处理引擎，不对未知结果作成功推断。</p></li></ol><div class="dialog-note">仅支持服务内置两种绿色水印的针对性清理，不承诺任意水印完全无痕。请仅处理自己拥有权利或已获授权的素材。清空列表只影响界面，不删除磁盘文件；历史任务不会自动重新处理。导入副本和结果保存在当前浏览器的网站存储中，清除网站数据会删除历史，不会自动清除，请留意磁盘空间。带有本工具处理标记的输出会被拒绝再次导入，避免重复清理造成偏色。</div><button id="help-confirm" class="primary-button" type="button">明白了</button></dialog>
+</body>
+</html>

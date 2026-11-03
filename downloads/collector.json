@@ -1,0 +1,32 @@
+{
+  "filename": "MaterialCollector-Windows.zip",
+  "size": 93175686,
+  "sha256": "44b34aaabb2ae4045d843cf9c5c0a84427f370429ca8325e87aef488746f10d7",
+  "chunks": [
+    {
+      "name": "collector-windows-01.bin",
+      "size": 20971520,
+      "sha256": "bb6a484ec8f8493a94d8ecae5f835cd24122ec9e1f5d4c8800e003e7caba8e9d"
+    },
+    {
+      "name": "collector-windows-02.bin",
+      "size": 20971520,
+      "sha256": "0ff186b633afa0bac4869676ce86da594fc6f345164b128c0698e332e082ac42"
+    },
+    {
+      "name": "collector-windows-03.bin",
+      "size": 20971520,
+      "sha256": "3e32074f59c812f7abd86984b381d3fd4c4eb48e6fc54f6a8e1c0835cc7bf7c1"
+    },
+    {
+      "name": "collector-windows-04.bin",
+      "size": 20971520,
+      "sha256": "3f2b01edd72b1622ae50dd57155863f90964bb593d2abdfe8a4904c1951d0d44"
+    },
+    {
+      "name": "collector-windows-05.bin",
+      "size": 9289606,
+      "sha256": "91b040d090a84b6e952ef429d86baa901704eee100a278791d79634331a09181"
+    }
+  ]
+}
